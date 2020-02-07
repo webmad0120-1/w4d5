@@ -4,8 +4,6 @@ const Post = require("../models/post");
 const User = require("../models/user");
 const util = require("util");
 
-// console.log(util.inspect(myObject, { showHidden: false, depth: null }));
-
 mongoose
   .connect("mongodb://localhost/doublepopulate", {
     useNewUrlParser: true,
@@ -43,7 +41,6 @@ mongoose
                 }
               })
               .then(populatedPost => {
-                // alternative shortcut
                 console.log(util.inspect(populatedPost, false, null, true /* enable colors */));
 
                 process.exit(0);
