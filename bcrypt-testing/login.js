@@ -8,10 +8,10 @@ const Users = require("./models/User");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 const MongoStore = require("connect-mongo")(session);
-const PORT = 3000;
+const PORT = 4000;
 
 mongoose
-  .connect("mongodb://localhost/movies", { useNewUrlParser: true })
+  .connect("mongodb://localhost/movies", { useNewUrlParser: true, useUnifiedTopology: true })
   .then(x => console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`))
   .catch(err => console.error("Error connecting to mongo", err));
 
@@ -21,6 +21,8 @@ hbs.registerPartials(__dirname + "/views/partials");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(
   session({
+    saveUninitialized: true,
+    resave: true,
     secret: "basic-auth-secret",
     cookie: { maxAge: 60000 },
     store: new MongoStore({
@@ -60,11 +62,11 @@ app.post("/signup", (req, res) => {
 });
 
 app.get("/logout", (req, res, next) => {
-    req.session.destroy((err) => {
-      // cannot access session here
-      res.redirect("/login");
-    });
+  req.session.destroy(err => {
+    // cannot access session here
+    res.redirect("/login");
   });
+});
 
 app.get("/private", (req, res) => {
   if (req.session.currentUser) {
