@@ -45,6 +45,10 @@ app.get("/login", (req, res) => {
 
 app.post("/signup", (req, res) => {
   const saltRounds = 10;
+  if (req.body.username === "" || req.body.password === "") {
+    res.json({ authorised: false, reason: "Bad credentials" });
+    return;
+  }
   const plainPassword1 = req.body.password;
   const salt = bcrypt.genSaltSync(saltRounds);
   const hash = bcrypt.hashSync(plainPassword1, salt);

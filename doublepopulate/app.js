@@ -1,8 +1,8 @@
+const util = require("util");
 const mongoose = require("mongoose");
 const Comment = require("./models/comment");
 const Post = require("./models/post");
 const User = require("./models/user");
-const util = require("util");
 
 mongoose
   .connect("mongodb://localhost/doublepopulate", {
@@ -11,12 +11,8 @@ mongoose
   })
   .then(() => {
     User.deleteMany()
-      .then(() => {
-        return Comment.deleteMany();
-      })
-      .then(() => {
-        return Post.deleteMany();
-      })
+      .then(() => Comment.deleteMany())
+      .then(() => Post.deleteMany())
       .then(() => {
         let userId;
 
@@ -25,12 +21,12 @@ mongoose
             userId = createdUsers[0]._id;
             return Comment.create([{ text: "t1", author: userId }]);
           })
-          .then((createdComment) => {
-            return Post.create([
+          .then((createdComment) =>
+            Post.create([
               { title: "post title 1", author: userId, comments: createdComment[0]._id }
-            ]);
-          })
-          .then((createdPost) => {
+            ])
+          )
+          .then(() => {
             Post.find()
               .populate("author")
               .populate({
