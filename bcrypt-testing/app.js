@@ -15,8 +15,8 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
-  .then(x => console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`))
-  .catch(err => console.error("Error connecting to mongo", err));
+  .then((x) => console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`))
+  .catch((err) => console.error("Error connecting to mongo", err));
 
 app.set("views", __dirname + "/views");
 app.set("view engine", "hbs");
@@ -49,12 +49,12 @@ app.post("/signup", (req, res) => {
   const salt = bcrypt.genSaltSync(saltRounds);
   const hash = bcrypt.hashSync(plainPassword1, salt);
 
-  Users.findOne({ name: req.body.username }).then(userFound => {
+  Users.findOne({ name: req.body.username }).then((userFound) => {
     if (userFound !== null) {
       res.json({ authorised: false, reason: "User exists" });
     } else {
       Users.create({ name: req.body.username, password: hash })
-        .then(userCreated => {
+        .then((userCreated) => {
           res.json({ created: true, userCreated });
         })
         .catch(() => {
@@ -65,7 +65,7 @@ app.post("/signup", (req, res) => {
 });
 
 app.get("/logout", (req, res, next) => {
-  req.session.destroy(err => {
+  req.session.destroy((err) => {
     // cannot access session here
     res.redirect("/login");
   });
@@ -84,7 +84,7 @@ app.post("/login", (req, res) => {
     res.json({ authorised: false, reason });
   }
   Users.findOne({ name: req.body.username })
-    .then(userFound => {
+    .then((userFound) => {
       // res.json({userFound})
       if (bcrypt.compareSync(req.body.password, userFound.password)) {
         //continue login
@@ -95,7 +95,7 @@ app.post("/login", (req, res) => {
         notFound("password or user are wrong");
       }
     })
-    .catch(userNotFoundError => {
+    .catch((userNotFoundError) => {
       notFound("user not found");
     });
 });

@@ -1,58 +1,53 @@
-require('dotenv').config();
-
-const bodyParser   = require('body-parser');
-const cookieParser = require('cookie-parser');
-const express      = require('express');
-const favicon      = require('serve-favicon');
-const hbs          = require('hbs');
-const mongoose     = require('mongoose');
-const logger       = require('morgan');
-const path         = require('path');
-
+const mongoose = require("mongoose");
+const Comment = require("./models/comment");
+const Post = require("./models/post");
+const User = require("./models/user");
+const util = require("util");
 
 mongoose
-  .connect('mongodb://localhost/doublepopulate', {useNewUrlParser: true})
-  .then(x => {
-    console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`)
+  .connect("mongodb://localhost/doublepopulate", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
   })
-  .catch(err => {
-    console.error('Error connecting to mongo', err)
+  .then(() => {
+    User.deleteMany()
+      .then(() => {
+        return Comment.deleteMany();
+      })
+      .then(() => {
+        return Post.deleteMany();
+      })
+      .then(() => {
+        let userId;
+
+        User.create([{ username: "fran" }, { username: "quique" }])
+          .then((createdUsers) => {
+            userId = createdUsers[0]._id;
+            return Comment.create([{ text: "t1", author: userId }]);
+          })
+          .then((createdComment) => {
+            return Post.create([
+              { title: "post title 1", author: userId, comments: createdComment[0]._id }
+            ]);
+          })
+          .then((createdPost) => {
+            Post.find()
+              .populate("author")
+              .populate({
+                path: "comments",
+                populate: {
+                  path: "author",
+                  model: "User"
+                }
+              })
+              .then((populatedPost) => {
+                console.log(util.inspect(populatedPost, false, null, true /* enable colors */));
+
+                process.exit(0);
+              });
+          });
+      });
+  })
+  .catch((err) => {
+    console.error("Error connecting to mongo", err);
   });
-
-const app_name = require('./package.json').name;
-const debug = require('debug')(`${app_name}:${path.basename(__filename).split('.')[0]}`);
-
-const app = express();
-
-// Middleware Setup
-app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-
-// Express View engine setup
-
-app.use(require('node-sass-middleware')({
-  src:  path.join(__dirname, 'public'),
-  dest: path.join(__dirname, 'public'),
-  sourceMap: true
-}));
-      
-
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'hbs');
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(favicon(path.join(__dirname, 'public', 'images', 'favicon.ico')));
-
-
-
-// default value for title local
-app.locals.title = 'Express - Generated with IronGenerator';
-
-
-
-const index = require('./routes/index');
-app.use('/', index);
-
-
-module.exports = app;
