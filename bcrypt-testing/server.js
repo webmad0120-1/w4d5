@@ -21,7 +21,7 @@ function createUser() {
           plaque: "XDVFFFF122",
           make: "Honda",
           owner: userCreated._id
-        }).then(carCreated => {
+        }).then(() => {
           console.log("I have finished!");
           process.exit(0);
         });
