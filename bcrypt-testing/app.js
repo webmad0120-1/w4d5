@@ -22,6 +22,7 @@ app.set("views", __dirname + "/views");
 app.set("view engine", "hbs");
 hbs.registerPartials(__dirname + "/views/partials");
 app.use(bodyParser.urlencoded({ extended: true }));
+
 app.use(
   session({
     saveUninitialized: true,
@@ -77,7 +78,14 @@ app.get("/logout", (req, res, next) => {
 
 app.get("/private", (req, res) => {
   if (req.session.currentUser) {
-    res.render("private");
+    Users.findById(req.session.currentUser).then((allUserData) => {
+      allUserData.name = `🦄🦄🦄${allUserData.name.toUpperCase()}🦄🦄🦄` 
+      allUserData.salary = 100000000
+
+      res.render("private", {
+        user: allUserData
+      });
+    });
   } else {
     res.redirect("/login");
   }
@@ -87,6 +95,12 @@ app.post("/login", (req, res) => {
   function notFound(reason) {
     res.json({ authorised: false, reason });
   }
+
+  if (req.body.username === "" || req.body.password === "") {
+    res.render("login", {error: "user or password are empty"})
+    return;
+  }
+
   Users.findOne({ name: req.body.username })
     .then((userFound) => {
       // res.json({userFound})
@@ -96,11 +110,12 @@ app.post("/login", (req, res) => {
         res.redirect("/private");
         // res.json({ authorised: true });
       } else {
-        notFound("password or user are wrong");
+        // notFound("password or user are wrong");
+        res.render("login", {error: "password is wrong"})
       }
     })
     .catch((userNotFoundError) => {
-      notFound("user not found");
+      res.render("login", {error: "user not found"})
     });
 });
 

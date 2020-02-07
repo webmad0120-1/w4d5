@@ -4,9 +4,9 @@ const Cars = require("./models/Car");
 
 function checkUser() {
   Cars.findOne()
-    .populate("owner")
+    // .populate("owner")
     .sort({ createdAt: -1 })
-    .then(carData => {
+    .then((carData) => {
       console.log(carData);
 
       process.exit(0);
@@ -18,7 +18,7 @@ function createCarAndUser(cb) {
     name: "John",
     password: "abc"
   })
-    .then(createdUser => {
+    .then((createdUser) => {
       return Cars.create({
         plaque: "a",
         make: "audi",
@@ -33,11 +33,11 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
-  .then(x => {
+  .then((x) => {
     console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`);
 
     createCarAndUser(checkUser);
   })
-  .catch(err => {
+  .catch((err) => {
     console.error("Error connecting to mongo", err);
   });
