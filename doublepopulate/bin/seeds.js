@@ -1,52 +1,56 @@
-const mongoose = require('mongoose');
-const Comment = require("../models/comment")
-const Post = require("../models/post")
-const User = require("../models/user")
+const mongoose = require("mongoose");
+const Comment = require("../models/comment");
+const Post = require("../models/post");
+const User = require("../models/user");
+const util = require("util");
+
+// console.log(util.inspect(myObject, { showHidden: false, depth: null }));
 
 mongoose
-  .connect('mongodb://localhost/doublepopulate', { useNewUrlParser: true })
+  .connect("mongodb://localhost/doublepopulate", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
   .then(x => {
-    console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`)
+    User.deleteMany()
+      .then(x => {
+        return Comment.deleteMany();
+      })
+      .then(x => {
+        return Post.deleteMany();
+      })
+      .then(x => {
+        let userId;
+
+        User.create([{ username: "fran" }, { username: "quique" }])
+          .then(createdUsers => {
+            userId = createdUsers[0]._id;
+            return Comment.create([{ text: "t1", author: userId }]);
+          })
+          .then(createdComment => {
+            return Post.create([
+              { title: "post title 1", author: userId, comments: createdComment[0]._id }
+            ]);
+          })
+          .then(createdPost => {
+            Post.find()
+              .populate("author")
+              .populate({
+                path: "comments",
+                populate: {
+                  path: "author",
+                  model: "User"
+                }
+              })
+              .then(populatedPost => {
+                // alternative shortcut
+                console.log(util.inspect(populatedPost, false, null, true /* enable colors */));
+
+                process.exit(0);
+              });
+          });
+      });
   })
   .catch(err => {
-    console.error('Error connecting to mongo', err)
+    console.error("Error connecting to mongo", err);
   });
-
-User.remove().then(x => {
-  return Comment.remove()
-}).then(x => {
-  return Post.remove()
-})
-  .then(x => {
-
-
-    let userId;
-
-    User
-      .create([{ username: "fran" }, { username: "quique" }])
-      .then(createdUsers => {
-        userId = createdUsers[0]._id
-        return Comment
-          .create([{ text: 't1', author: userId }])
-      })
-      .then(createdComment => {
-        return Post
-          .create([{ title: 'post title 1', author: userId, comments: createdComment[0]._id }])
-      })
-      .then(createdPost => {
-        Post
-          .find()
-          .populate("author")
-          .populate({
-            path: 'comments',
-            populate: {
-              path: 'author',
-              model: 'User'
-            }
-          })
-          .then(popPost => {
-            console.log(JSON.stringify(popPost))
-            process.exit(0);
-          })
-      })
-  })
