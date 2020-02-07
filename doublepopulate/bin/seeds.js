@@ -23,7 +23,7 @@ User.remove().then(x => {
     let userId;
 
     User
-      .create([{ username: "sito" }, { username: "luca" }])
+      .create([{ username: "fran" }, { username: "dani" }])
       .then(createdUsers => {
         userId = createdUsers[0]._id
         return Comment
