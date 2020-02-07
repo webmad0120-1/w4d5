@@ -7,15 +7,14 @@ function createUser() {
   const saltRounds = 10;
   const plainPassword1 = "123";
   const salt = bcrypt.genSaltSync(saltRounds);
-  const hash = bcrypt.hashSync(plainPassword1, salt)
+  const hash = bcrypt.hashSync(plainPassword1, salt);
 
   User.deleteMany().then(() => {
     User.create({
       name: "Quique",
       password: hash
     }).then(userCreated => {
-      
-      console.log("The password is correct " + bcrypt.compareSync("1234", hash))
+      console.log("is the password correct?: " + bcrypt.compareSync("1234", hash));
 
       Car.deleteMany().then(() => {
         Car.create({
@@ -32,7 +31,7 @@ function createUser() {
 }
 
 mongoose
-  .connect("mongodb://localhost/movies", { useNewUrlParser: true })
+  .connect("mongodb://localhost/movies", { useNewUrlParser: true, useUnifiedTopology: true })
   .then(x => {
     console.log(`Connected to Mongo! Database name: "${x.connections[0].name}"`);
 
